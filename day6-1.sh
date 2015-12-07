@@ -3,23 +3,11 @@ declare -A matrix
 rows=999
 cols=999
 
-#all lights are off
-#for i in `seq 0 $rows` 
-#do
-#	echo $i
-#	for j in `seq 0 $cols` 
-#	do
-#        	matrix[$i,$j]=0
-#    	done
-#done
-
-echo "Finished building matrix"
 # parse actions
 actionnum=0
 while read line
 do
 	(( actionnum++ ))
-	echo $actionnum
 	throughsplit1=`echo $line | awk -F"through" {'print $1'}`
 	throughsplit2=`echo $line | awk -F"through" {'print $2'}`
 	
@@ -32,33 +20,37 @@ do
 	max_x=`echo $throughsplit2 | awk -F"," {'print $1'}`
 	max_y=`echo $throughsplit2 | awk -F"," {'print $2'}`
 
-	echo "$actionnum is $action from $min_x,$min_y to $max_x,$max_y" >> log
+	echo "$actionnum is $action from $min_x,$min_y to $max_x,$max_y" 
 
 	for i in `seq $min_x $max_x`
 	do
 		for j in `seq $min_y $max_y`
 		do	
-			if [ -z "${matrix[$i,$j]}" ];
+			cur=${matrix[$i,$j]}
+			if [ -z "$cur" ];
 				then 
-					matrix[$i,$j]=0
+					cur=0
 			fi
-			[[ $action == 'u' ]] && matrix[$i,$j]=1
-			[[ $action == 'd' ]] && matrix[$i,$j]=0
-			[[ $action == 't' ]] && [[ $cur -eq 0 ]] && matrix[$i,$j]=1
-			[[ $action == 't' ]] && [[ $cur -eq 1 ]] && matrix[$i,$j]=0
+			[[ $action == 'u' ]] && matrix[$i,$j]=1 #&& echo "U act $i $j"
+			[[ $action == 'd' ]] && matrix[$i,$j]=0 #&& echo "D act $i $j"
+			[[ $action == 't' ]] && [[ $cur -eq 0 ]] && matrix[$i,$j]=1 #&& echo "T U act $i $j"
+			[[ $action == 't' ]] && [[ $cur -eq 1 ]] && matrix[$i,$j]=0 #&& echo "T D act $i $j"
 		done
 	done
 done < day6.csv
 
 echo "Finished taking actions"
-# sum
+#Printout
 sum=0
 for i in `seq 0 $rows`
 do
         echo "Summing row $i"
         for j in `seq 0 $cols`
         do
+               #echo $i, $j: ${matrix[$i,$j]}
                [[ ${matrix[$i,$j]} -eq 1 ]] && (( sum++ ))
         done
 done
-echo $sum
+
+rm -f sum.txt
+echo "TOTAL: $sum" >> sum.txt
